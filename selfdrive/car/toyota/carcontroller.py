@@ -6,6 +6,7 @@ from selfdrive.car.toyota.toyotacan import create_steer_command, create_ui_comma
                                            create_fcw_command
 from selfdrive.car.toyota.values import Ecu, CAR, STATIC_MSGS, NO_STOP_TIMER_CAR, CarControllerParams
 from opendbc.can.packer import CANPacker
+from selfdrive.config import Conversions as CV
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -58,9 +59,20 @@ class CarController():
       apply_accel = 0.06 - actuators.brake
     else:
       apply_accel = actuators.gas - actuators.brake
+      
+    curr_speed_mph = CS.out.vEgo * CV.MS_TO_MPH
+    new_accel_max = CarControllerParams.ACCEL_MAX
+    if curr_speed_mph > 13:
+      if curr_speed_mph >= 50:
+        new_accel_max = 0.5
+      else:
+        # variable max_aceel between 10 mph and 50 mph
+        new_accel_max = CarControllerParams.ACCEL_MAX - (((curr_speed_mph - 13.0)/ 37))
+
 
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady, enabled)
-    apply_accel = clip(apply_accel * CarControllerParams.ACCEL_SCALE, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    #apply_accel = clip(apply_accel * CarControllerParams.ACCEL_SCALE, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    apply_accel = clip(apply_accel * CarControllerParams.ACCEL_SCALE, CarControllerParams.ACCEL_MIN, new_accel_max)
 
     # steer torque
     new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
