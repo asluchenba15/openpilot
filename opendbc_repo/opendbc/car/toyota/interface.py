@@ -141,6 +141,10 @@ class CarInterface(CarInterfaceBase):
       print("----------------------------------------------")
       print("dragonpilot: SDSU detected!")
       print("----------------------------------------------")
+      # tune from https://github.com/CT921/opendbc/blob/405987cc2a4559045952358a26b9496c447de4b7/opendbc/car/toyota/interface.py
+      ret.stoppingDecelRate = 0.3
+      ret.longitudinalTuning.kiBP = [0., 25]
+      ret.longitudinalTuning.kiV = [0.8, 1.2]
 
       ret.enableDsu = False
       sdsu_active = True
